@@ -77,9 +77,19 @@ jobs:
           LOCALSTACK_PIPELINE_ID: ${{ secrets.LOCALSTACK_PIPELINE_ID }}
         run: |
           localstack start -d
-          while ! localstack logs | grep -q "activated CI Extension"; do \
-            sleep 1 \
+      
+      - name: Wait for LocalStack to be ready
+        run: |
+          echo "Waiting for LocalStack CI extension to activate..."
+          for i in {1..60}; do
+            if localstack logs | grep -q "ci extension activated"; then
+              echo "CI extension activated. Proceeding..."
+              exit 0
+            fi
+            sleep 5
           done
+          echo "CI extension not activated in time. Failing..."
+          exit 1
 
       - name: Deploy infrastructure
         run: |
