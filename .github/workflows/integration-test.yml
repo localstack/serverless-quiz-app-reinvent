@@ -54,6 +54,7 @@ jobs:
 
       - name: Set up Dependencies
         env:
+          API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
         run: |
           pip install requests boto3 pytest localstack-sdk-python
