@@ -68,7 +68,8 @@ jobs:
       - name: Start LocalStack
         env:
           DEBUG: 1
-          DOCKER_FLAGS: --e API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1
+          # note LOCALSTACK_API_ENDPOINT is to support staging inside the extension for now
+          DOCKER_FLAGS: -e LOCALSTACK_API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1
           API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
           EXTENSION_DEV_MODE: 1
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
