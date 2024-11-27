@@ -56,22 +56,18 @@ jobs:
         run: |
           pip install requests boto3 pytest localstack-sdk-python
           pip install localstack-ci-extension-plugins/pytest_plugin
-          mkdir -p /extensions
-          mv $GITHUB_WORKSPACE/localstack-ci-extension /extensions/ci-extension
+          pip install localstack
 
       - name: Start LocalStack
-        uses: LocalStack/setup-localstack@v0.2.3
-        with:
-          image-tag: 'latest'
-          use-pro: 'true'
-          configuration: LS_LOG=trace DEBUG=1 DOCKER_FLAGS="-v /extensions/ci-extension:/extensions/ci-extension -e API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1"
-          install-awslocal: 'true'
-          extension-auto-install: '/extensions/ci-extension'
         env:
+          LS_LOG: trace
+          DEBUG: 1
+          DOCKER_FLAGS: -e API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1
           API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
           LOCALSTACK_PROJECT_ID: ${{ secrets.LOCALSTACK_PROJECT_ID }}
           LOCALSTACK_PIPELINE_ID: ${{ secrets.LOCALSTACK_PIPELINE_ID }}
+        run: localstack start
 
       - name: Deploy infrastructure
         run: |
