@@ -53,6 +53,8 @@ jobs:
           node-version: 20
 
       - name: Set up Dependencies
+        env:
+          LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
         run: |
           pip install requests boto3 pytest localstack-sdk-python
           pip install localstack-ci-extension-plugins/pytest_plugin
