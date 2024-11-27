@@ -57,6 +57,7 @@ jobs:
           pip install requests boto3 pytest localstack-sdk-python
           pip install localstack-ci-extension-plugins/pytest_plugin
           echo "CI_EXTENSION_PATH=$GITHUB_WORKSPACE/localstack-ci-extension" >> $GITHUB_ENV
+          echo "$CI_EXTENSION_PATH"
           ls -la $CI_EXTENSION_PATH
 
       - name: Start LocalStack
