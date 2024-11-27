@@ -75,7 +75,11 @@ jobs:
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
           LOCALSTACK_PROJECT_ID: ${{ secrets.LOCALSTACK_PROJECT_ID }}
           LOCALSTACK_PIPELINE_ID: ${{ secrets.LOCALSTACK_PIPELINE_ID }}
-        run: localstack start
+        run: |
+          localstack start -d
+          while ! localstack logs | grep -q "activated CI Extension"; do \
+            sleep 1 \
+          done
 
       - name: Deploy infrastructure
         run: |
