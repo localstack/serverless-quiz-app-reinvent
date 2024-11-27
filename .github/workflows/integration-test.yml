@@ -82,7 +82,7 @@ jobs:
         run: |
           echo "Waiting for LocalStack CI extension to activate..."
           for i in {1..60}; do
-            if localstack logs | grep -q "ci extension activated"; then
+            if localstack logs | grep -q "activated CI Extension"; then
               echo "CI extension activated. Proceeding..."
               exit 0
             fi
