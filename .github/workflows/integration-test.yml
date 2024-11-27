@@ -61,7 +61,7 @@ jobs:
       - name: Prepare LocalStack
         env:
           API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
-          LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_API_KEY }}
         run: |
           localstack extensions dev enable ./localstack-ci-extension
 
@@ -72,7 +72,7 @@ jobs:
           DOCKER_FLAGS: -e API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1
           API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
           EXTENSION_DEV_MODE: 1
-          LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_API_KEY }}
           LOCALSTACK_PROJECT_ID: ${{ secrets.LOCALSTACK_PROJECT_ID }}
           LOCALSTACK_PIPELINE_ID: ${{ secrets.LOCALSTACK_PIPELINE_ID }}
         run: |
