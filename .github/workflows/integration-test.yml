@@ -68,7 +68,6 @@ jobs:
       - name: Start LocalStack
         env:
           DEBUG: 1
-          # note LOCALSTACK_API_ENDPOINT is to support staging inside the extension for now
           DOCKER_FLAGS: -e API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1
           API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
           EXTENSION_DEV_MODE: 1
@@ -76,12 +75,12 @@ jobs:
           LOCALSTACK_PROJECT_ID: ${{ secrets.LOCALSTACK_PROJECT_ID }}
           LOCALSTACK_PIPELINE_ID: ${{ secrets.LOCALSTACK_PIPELINE_ID }}
         run: |
-          DOCKER_FLAGS=$DOCKER_FLAGS localstack start
+          DOCKER_FLAGS=$DOCKER_FLAGS localstack start -d
       
       - name: Wait for LocalStack to be ready
         run: |
           echo "Waiting for LocalStack CI extension to activate..."
-          for i in {1..60}; do
+          for i in {1..10}; do
             if localstack logs | grep -q "activated CI Extension"; then
               echo "CI extension activated. Proceeding..."
               exit 0
