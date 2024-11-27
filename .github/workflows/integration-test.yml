@@ -56,7 +56,7 @@ jobs:
         run: |
           pip install requests boto3 pytest localstack-sdk-python
           pip install localstack-ci-extension-plugins/pytest_plugin
-          pip install localstack
+          pip install localstack==3.8.1
 
       - name: Prepare LocalStack
         env:
