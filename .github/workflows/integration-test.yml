@@ -63,6 +63,7 @@ jobs:
           API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
         run: |
+          ls -al localstack-ci-extension
           localstack extensions dev enable ./localstack-ci-extension
 
       - name: Start LocalStack
