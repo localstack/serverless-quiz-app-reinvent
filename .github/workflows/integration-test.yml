@@ -56,20 +56,19 @@ jobs:
         run: |
           pip install requests boto3 pytest localstack-sdk-python
           pip install localstack-ci-extension-plugins/pytest_plugin
-          pip install localstack==3.8.1
+          pip install localstack
 
       - name: Prepare LocalStack
         env:
           API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
         run: |
-          docker pull localstack/localstack-pro:3.8.1
           localstack extensions dev enable ./localstack-ci-extension
 
       - name: Start LocalStack
         env:
           DEBUG: 1
-          DOCKER_FLAGS: -e API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1
+          DOCKER_FLAGS: --e API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1
           API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
           EXTENSION_DEV_MODE: 1
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
