@@ -57,9 +57,8 @@ jobs:
 
       - name: Set up Dependencies
         run: |
-          pip install requests boto3 pytest localstack-sdk-python
+          pip install localstack requests boto3 pytest localstack-sdk-python awscli-local
           pip install localstack-ci-extension-plugins/pytest_plugin
-          pip install localstack
           cd localstack-ci-extension && pip install -e . && cd -
 
       - name: Prepare LocalStack
