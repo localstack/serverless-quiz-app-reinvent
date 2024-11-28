@@ -11,6 +11,7 @@ develop-eggs/
 dist/
 .env
 .venv
+*.egg-info/
 env/
 venv/
 __pycache__
