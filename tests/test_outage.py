@@ -3,10 +3,13 @@ import time
 import boto3
 import json
 import requests
+import logging
 
 import localstack.sdk.chaos
 from localstack.sdk.models import FaultRule
 from localstack.sdk.chaos.managers import fault_configuration
+
+LOG = logging.getLogger(__name__)
 
 LOCALSTACK_ENDPOINT = "http://localhost.localstack.cloud:4566"
 API_NAME = 'QuizAPI'
@@ -30,7 +33,7 @@ def api_endpoint(apigateway_client):
     API_ID = api['id']
     API_ENDPOINT = f"{LOCALSTACK_ENDPOINT}/restapis/{API_ID}/test/_user_request_"
 
-    print(f"API Endpoint: {API_ENDPOINT}")
+    LOG.info(f"API Endpoint: {API_ENDPOINT}")
 
     time.sleep(2)
 
@@ -41,7 +44,7 @@ def test_dynamodb_outage(api_endpoint):
     
     # Using fault_configuration context manager to apply and automatically clean up the fault rule
     with fault_configuration(fault_rules=[outage_rule]):
-        print("DynamoDB outage initiated within context.")
+        LOG.info("DynamoDB outage initiated within context.")
         
         # Attempt to create a quiz during the outage
         create_quiz_payload = {
@@ -68,10 +71,10 @@ def test_dynamodb_outage(api_endpoint):
         assert response.status_code == 500
         response_data = response.json()
         assert "Error storing quiz data. It has been queued for retry." in response_data.get("message", "")
-        print("Received expected error message during outage.")
+        LOG.info("Received expected error message during outage.")
 
     # After the context manager exits, the outage should be resolved
-    print("Waiting for the system to process the queued request...")
+    LOG.info("Waiting for the system to process the queued request...")
     time.sleep(15)
 
     # Check if the quiz was eventually created successfully
@@ -80,4 +83,4 @@ def test_dynamodb_outage(api_endpoint):
     quizzes_list = response.json().get('Quizzes', [])
     quiz_titles = [quiz['Title'] for quiz in quizzes_list]
     assert "Outage Test Quiz" in quiz_titles
-    print("Quiz successfully created after outage resolved.")
+    LOG.info("Quiz successfully created after outage resolved.")

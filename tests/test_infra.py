@@ -4,6 +4,11 @@ import requests
 import localstack.sdk.aws
 import json
 import time
+import logging
+
+from lambdas.utils import prepare_response
+
+LOG = logging.getLogger(__name__)
 
 @pytest.fixture(scope='module')
 def api_endpoint():
@@ -21,7 +26,7 @@ def api_endpoint():
     API_ID = api['id']
     API_ENDPOINT = f"http://localhost:4566/restapis/{API_ID}/test/_user_request_"
 
-    print(f"API Endpoint: {API_ENDPOINT}")
+    LOG.info(f"API Endpoint: {API_ENDPOINT}")
 
     time.sleep(2)
 
@@ -78,7 +83,7 @@ def test_quiz_workflow(api_endpoint):
     assert 'QuizID' in quiz_creation_response
     quiz_id = quiz_creation_response['QuizID']
 
-    print(f"Quiz created with ID: {quiz_id}")
+    LOG.info(f"Quiz created with ID: {quiz_id}")
 
     response = requests.get(f"{api_endpoint}/listquizzes")
     assert response.status_code == 200
@@ -149,7 +154,7 @@ def test_quiz_workflow(api_endpoint):
             "SubmissionID": submission_response["SubmissionID"]
         })
 
-        print(f"{user['Username']} submitted quiz with SubmissionID: {submission_response['SubmissionID']}")
+        LOG.info(f"{user['Username']} submitted quiz with SubmissionID: {submission_response['SubmissionID']}")
 
     time.sleep(5)
 
@@ -191,7 +196,7 @@ def test_quiz_workflow(api_endpoint):
         expected_score = expected_scores[username]
         assert actual_score == pytest.approx(expected_score, abs=0.01)
 
-        print(f"{username} - Expected Score: {expected_score}, Actual Score: {actual_score}")
+        LOG.info(f"{username} - Expected Score: {expected_score}, Actual Score: {actual_score}")
 
     for submission in submissions:
         response = requests.get(f"{api_endpoint}/getsubmission?submission_id={submission['SubmissionID']}")
@@ -206,7 +211,7 @@ def test_quiz_workflow(api_endpoint):
         actual_score = submission_data['Score']
         assert actual_score == pytest.approx(expected_score, abs=0.01)
 
-        print(f"Verified submission for {submission['Username']} with Score: {actual_score}")
+        LOG.info(f"Verified submission for {submission['Username']} with Score: {actual_score}")
 
     client = localstack.sdk.aws.AWSClient()
     sender_email = "sender@example.com"
@@ -227,6 +232,22 @@ def test_quiz_workflow(api_endpoint):
             assert hasattr(body, 'html_part')
             html_content = body.html_part
 
-            print(f"Email content: {html_content}")
+            LOG.info(f"Email content: {html_content}")
 
     assert email_found, f"No email found sent from {sender_email}"
+
+def test_faulty_assertion(api_endpoint):
+    test_quiz_workflow(api_endpoint=api_endpoint)
+
+    response = requests.get(f"{api_endpoint}/getleaderboard?quiz_id=wrongid&top=3")
+    assert response.status_code == 200
+
+def test_faulty_invocation(api_endpoint):
+    test_quiz_workflow(api_endpoint=api_endpoint)
+
+    class NonSerializable:
+        pass
+
+    response = prepare_response(200, NonSerializable())
+
+    assert response['statusCode'] == 200
