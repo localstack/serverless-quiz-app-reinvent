@@ -242,7 +242,7 @@ def test_faulty_assertion(api_endpoint):
     response = requests.get(f"{api_endpoint}/getleaderboard?quiz_id=wrongid&top=3")
     assert response.status_code == 500
 
-@pytest.mark.take_snapshot(before=True, after=True)
+@pytest.mark.resource_snapshot(before=True, after=True)
 def test_faulty_invocation(api_endpoint):
     test_quiz_workflow(api_endpoint=api_endpoint)
 
