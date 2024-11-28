@@ -19,8 +19,8 @@ on:
           - ubuntu-latest
 env:
   LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
-  LOCALSTACK_PROJECT_ID: ${{ env.LOCALSTACK_PROJECT_ID }}
-  LOCALSTACK_PIPELINE_ID: ${{ env.LOCALSTACK_PIPELINE_ID }}
+#  LOCALSTACK_PROJECT_ID: ${{ env.LOCALSTACK_PROJECT_ID }}
+#  LOCALSTACK_PIPELINE_ID: ${{ env.LOCALSTACK_PIPELINE_ID }}
 
 jobs:
   integration-test-job:
