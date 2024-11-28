@@ -240,7 +240,7 @@ def test_faulty_assertion(api_endpoint):
     test_quiz_workflow(api_endpoint=api_endpoint)
 
     response = requests.get(f"{api_endpoint}/getleaderboard?quiz_id=wrongid&top=3")
-    assert response.status_code == 200
+    assert response.status_code == 500
 
 def test_faulty_invocation(api_endpoint):
     test_quiz_workflow(api_endpoint=api_endpoint)
