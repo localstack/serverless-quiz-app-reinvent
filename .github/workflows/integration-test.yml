@@ -61,19 +61,18 @@ jobs:
           pip install localstack-ci-extension-plugins/pytest_plugin
           pip install localstack
 
-#      - name: Prepare LocalStack
-#        env:
-#          API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
-#          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_API_KEY }}
-#        run: |
-#          localstack extensions dev enable ./localstack-ci-extension
+      - name: Prepare LocalStack
+        run: |
+          LOCALSTACK_API_KEY=$LOCALSTACK_API_KEY \
+          API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1 \
+            localstack extensions dev enable ./localstack-ci-extension
 
       # uncomment the following lines if you need to ssh into the GH Action:
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-        with:
-          limit-access-to-actor: true
-          limit-access-to-users: pandomic,whummer,joe4dev,dfangl,dominikschubert
+#      - name: Setup upterm session
+#        uses: lhotari/action-upterm@v1
+#        with:
+#          limit-access-to-actor: true
+#          limit-access-to-users: pandomic,whummer,joe4dev,dfangl,dominikschubert
 
       - name: Start LocalStack
         env:
@@ -82,8 +81,14 @@ jobs:
           API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
           EXTENSION_DEV_MODE: 1
         run: |
-          localstack extensions dev enable ./localstack-ci-extension && \
-            DOCKER_FLAGS=$DOCKER_FLAGS localstack start -d
+          DEBUG=1 \
+          LOCALSTACK_API_KEY=$LOCALSTACK_API_KEY \
+          LOCALSTACK_PROJECT_ID=$LOCALSTACK_PROJECT_ID \
+          LOCALSTACK_PIPELINE_ID=$LOCALSTACK_PIPELINE_ID \
+          DOCKER_FLAGS=-e API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1 \
+          API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1 \
+          EXTENSION_DEV_MODE=1 \
+          localstack start -d
       
       - name: Wait for LocalStack to be ready
         run: |
