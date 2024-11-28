@@ -29,7 +29,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        path: app
+        with:
+          path: app
 
       - name: Checkout CI Extension
         uses: actions/checkout@v4
