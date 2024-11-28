@@ -104,7 +104,7 @@ jobs:
                     {
                       "step_id": "deploy",
                       "name": "Deploy Infrastructure",
-                      "step_type" : "deploy",
+                      "step_type" : "step",
                       "state": "passed",
                       "time_start": "'"$START_TIME"'",
                       "time_end": "'"$END_TIME"'"
@@ -122,7 +122,7 @@ jobs:
                     {
                       "step_id": "seed",
                       "name": "Seed Data",
-                      "step_type" : "deploy",
+                      "step_type" : "step",
                       "state": "passed",
                       "time_start": "'"$START_TIME"'",
                       "time_end": "'"$END_TIME"'"
