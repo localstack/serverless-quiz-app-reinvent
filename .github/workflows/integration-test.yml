@@ -75,17 +75,12 @@ jobs:
 #          limit-access-to-users: pandomic,whummer,joe4dev,dfangl,dominikschubert
 
       - name: Start LocalStack
-        env:
-          DEBUG: 1
-          DOCKER_FLAGS: -e API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1
-          API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
-          EXTENSION_DEV_MODE: 1
         run: |
           DEBUG=1 \
           LOCALSTACK_API_KEY=$LOCALSTACK_API_KEY \
           LOCALSTACK_PROJECT_ID=$LOCALSTACK_PROJECT_ID \
           LOCALSTACK_PIPELINE_ID=$LOCALSTACK_PIPELINE_ID \
-          DOCKER_FLAGS=-e API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1 \
+          DOCKER_FLAGS="-e API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1" \
           API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1 \
           EXTENSION_DEV_MODE=1 \
           localstack start -d
