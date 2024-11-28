@@ -29,8 +29,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          path: app
 
       - name: Checkout CI Extension
         uses: actions/checkout@v4
@@ -62,23 +60,15 @@ jobs:
           pip install requests boto3 pytest localstack-sdk-python
           pip install localstack-ci-extension-plugins/pytest_plugin
           pip install localstack
+          cd localstack-ci-extension && pip install -e . && cd -
 
       - name: Prepare LocalStack
-        working-directory: ./localstack-ci-extension
         run: |
           LOCALSTACK_API_KEY=$LOCALSTACK_API_KEY \
           API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1 \
-            localstack extensions dev enable .
-
-      # uncomment the following lines if you need to ssh into the GH Action:
-#      - name: Setup upterm session
-#        uses: lhotari/action-upterm@v1
-#        with:
-#          limit-access-to-actor: true
-#          limit-access-to-users: pandomic,whummer,joe4dev,dfangl,dominikschubert
+            localstack extensions dev enable ./localstack-ci-extension
 
       - name: Start LocalStack
-        working-directory: ./app
         run: |
           DEBUG=1 \
           LOCALSTACK_API_KEY=$LOCALSTACK_API_KEY \
@@ -104,7 +94,6 @@ jobs:
           exit 1
 
       - name: Deploy infrastructure
-        working-directory: ./app
         run: |
           START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
           bash bin/deploy.sh
@@ -140,7 +129,6 @@ jobs:
           AWS_REGION: us-east-1
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
-        working-directory: ./app
         run: |
           pytest tests
 
