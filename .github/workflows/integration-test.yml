@@ -99,28 +99,36 @@ jobs:
           END_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
           curl -X POST http://localhost:4566/_localstack/extensions/ci/steps \
             -H "Content-Type: application/json" \
-            -d '[{
-                  "step_id": "deploy",
-                  "name": "Deploy Infrastructure",
-                  "step_type" : "deploy",
-                  "state": "passed",
-                  "time_start": "'"$START_TIME"'",
-                  "time_end": "'"$END_TIME"'"
-                }]'
-          
+            -d '{
+                  "steps": [
+                    {
+                      "step_id": "deploy",
+                      "name": "Deploy Infrastructure",
+                      "step_type" : "deploy",
+                      "state": "passed",
+                      "time_start": "'"$START_TIME"'",
+                      "time_end": "'"$END_TIME"'"
+                    }
+                  ]
+                }'
+  
           START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
           bash bin/seed.sh
           END_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
           curl -X POST http://localhost:4566/_localstack/extensions/ci/steps \
             -H "Content-Type: application/json" \
-            -d '[{
-                  "step_id": "seed",
-                  "name": "Seed Data",
-                  "step_type" : "deploy",
-                  "state": "passed",
-                  "time_start": "'"$START_TIME"'",
-                  "time_end": "'"$END_TIME"'"
-                }]'
+            -d '{
+                  "steps": [
+                    {
+                      "step_id": "seed",
+                      "name": "Seed Data",
+                      "step_type" : "deploy",
+                      "state": "passed",
+                      "time_start": "'"$START_TIME"'",
+                      "time_end": "'"$END_TIME"'"
+                    }
+                  ]
+                }'
 
       - name: Run Tests
         env:
