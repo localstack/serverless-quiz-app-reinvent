@@ -149,13 +149,11 @@ jobs:
           localstack logs
 
       - name: Generate a Diagnostic Report
-        working-directory: ./app
         if: failure()
         run: |
           curl -s localhost:4566/_localstack/diagnose | gzip -cf > diagnose.json.gz
 
       - name: Upload the Diagnostic Report
-        working-directory: ./app
         if: failure()
         uses: actions/upload-artifact@v3
         with:
