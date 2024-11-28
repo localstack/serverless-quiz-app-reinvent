@@ -29,6 +29,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        path: app
 
       - name: Checkout CI Extension
         uses: actions/checkout@v4
@@ -62,10 +63,11 @@ jobs:
           pip install localstack
 
       - name: Prepare LocalStack
+        working-directory: ./localstack-ci-extension
         run: |
           LOCALSTACK_API_KEY=$LOCALSTACK_API_KEY \
           API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1 \
-            localstack extensions dev enable ./localstack-ci-extension
+            localstack extensions dev enable .
 
       # uncomment the following lines if you need to ssh into the GH Action:
 #      - name: Setup upterm session
@@ -75,6 +77,7 @@ jobs:
 #          limit-access-to-users: pandomic,whummer,joe4dev,dfangl,dominikschubert
 
       - name: Start LocalStack
+        working-directory: ./app
         run: |
           DEBUG=1 \
           LOCALSTACK_API_KEY=$LOCALSTACK_API_KEY \
@@ -100,6 +103,7 @@ jobs:
           exit 1
 
       - name: Deploy infrastructure
+        working-directory: ./app
         run: |
           START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
           bash bin/deploy.sh
@@ -135,6 +139,7 @@ jobs:
           AWS_REGION: us-east-1
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
+        working-directory: ./app
         run: |
           pytest tests
 
@@ -144,11 +149,13 @@ jobs:
           localstack logs
 
       - name: Generate a Diagnostic Report
+        working-directory: ./app
         if: failure()
         run: |
           curl -s localhost:4566/_localstack/diagnose | gzip -cf > diagnose.json.gz
 
       - name: Upload the Diagnostic Report
+        working-directory: ./app
         if: failure()
         uses: actions/upload-artifact@v3
         with:
