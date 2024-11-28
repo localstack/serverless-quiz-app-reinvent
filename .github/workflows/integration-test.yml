@@ -58,12 +58,12 @@ jobs:
           pip install localstack-ci-extension-plugins/pytest_plugin
           pip install localstack
 
-      - name: Prepare LocalStack
-        env:
-          API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
-          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_API_KEY }}
-        run: |
-          localstack extensions dev enable ./localstack-ci-extension
+#      - name: Prepare LocalStack
+#        env:
+#          API_ENDPOINT: 'https://api.staging.aws.localstack.cloud/v1'
+#          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_API_KEY }}
+#        run: |
+#          localstack extensions dev enable ./localstack-ci-extension
 
       - name: Start LocalStack
         env:
@@ -75,7 +75,8 @@ jobs:
           LOCALSTACK_PROJECT_ID: ${{ secrets.LOCALSTACK_PROJECT_ID }}
           LOCALSTACK_PIPELINE_ID: ${{ secrets.LOCALSTACK_PIPELINE_ID }}
         run: |
-          DOCKER_FLAGS=$DOCKER_FLAGS localstack start -d
+          localstack extensions dev enable ./localstack-ci-extension && \
+            DOCKER_FLAGS=$DOCKER_FLAGS localstack start -d
       
       - name: Wait for LocalStack to be ready
         run: |
