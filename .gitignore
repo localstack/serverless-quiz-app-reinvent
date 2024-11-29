@@ -4,12 +4,14 @@
 
 # Python
 
+.idea
 .Python
 build/
 develop-eggs/
 dist/
 .env
 .venv
+*.egg-info/
 env/
 venv/
 __pycache__

@@ -17,7 +17,10 @@ on:
         type: choice
         options:
           - ubuntu-latest
-
+env:
+  LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+  LOCALSTACK_PROJECT_ID: project_1bipvrdld3
+  LOCALSTACK_PIPELINE_ID: pipeline_dw7flhan3i
 
 jobs:
   integration-test-job:
@@ -26,6 +29,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Checkout CI Extension
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PULL_TOKEN }}
+          repository: localstack/localstack-ci-extension
+          path: localstack-ci-extension
+
+      - name: Checkout CI Extension Plugin
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PULL_TOKEN }}
+          repository: localstack/localstack-ci-extension-plugins
+          path: localstack-ci-extension-plugins
 
       - name: Set up Python 3.11
         id: setup-python
@@ -40,58 +57,89 @@ jobs:
 
       - name: Set up Dependencies
         run: |
-          pip install requests boto3 pytest localstack-sdk-python
+          make install
+          pip install localstack-ci-extension-plugins/pytest_plugin
+          cd localstack-ci-extension && pip install -e . && cd -
+
+      - name: Prepare LocalStack
+        run: |
+          LOCALSTACK_API_KEY=$LOCALSTACK_API_KEY \
+            localstack extensions dev enable ./localstack-ci-extension
 
       - name: Start LocalStack
-        uses: LocalStack/setup-localstack@v0.2.3
-        with:
-          image-tag: 'latest'
-          use-pro: 'true'
-          configuration: LS_LOG=trace
-          install-awslocal: 'true'
-        env:
-          LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+        run: |
+          DEBUG=1 \
+          LOCALSTACK_API_KEY=$LOCALSTACK_API_KEY \
+          LOCALSTACK_PROJECT_ID=$LOCALSTACK_PROJECT_ID \
+          LOCALSTACK_PIPELINE_ID=$LOCALSTACK_PIPELINE_ID \
+          DNS_NAME_PATTERNS_TO_RESOLVE_UPSTREAM="*cianalyticsbucket*" \
+          EXTENSION_DEV_MODE=1 \
+          localstack start -d
+      
+      - name: Wait for LocalStack to be ready
+        run: |
+          echo "Waiting for LocalStack CI extension to activate..."
+          for i in {1..10}; do
+            if localstack logs | grep -q "activated CI Extension"; then
+              echo "CI extension activated. Proceeding..."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "CI extension not activated in time. Failing..."
+          exit 1
 
       - name: Deploy infrastructure
         run: |
+          START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
           bash bin/deploy.sh
+          END_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
+          curl -X POST http://localhost:4566/_localstack/extensions/ci/steps \
+            -H "Content-Type: application/json" \
+            -d '{
+                  "steps": [
+                    {
+                      "step_id": "deploy",
+                      "name": "Deploy Infrastructure",
+                      "step_type" : "step",
+                      "state": "passed",
+                      "time_start": "'"$START_TIME"'",
+                      "time_end": "'"$END_TIME"'"
+                    }
+                  ]
+                }'
+  
+          START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
           bash bin/seed.sh
+          END_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
+          curl -X POST http://localhost:4566/_localstack/extensions/ci/steps \
+            -H "Content-Type: application/json" \
+            -d '{
+                  "steps": [
+                    {
+                      "step_id": "seed",
+                      "name": "Seed Data",
+                      "step_type" : "step",
+                      "state": "passed",
+                      "time_start": "'"$START_TIME"'",
+                      "time_end": "'"$END_TIME"'"
+                    }
+                  ]
+                }'
 
-      - name: Run Integration Tests
+      - name: Run Tests
         env:
           AWS_DEFAULT_REGION: us-east-1
           AWS_REGION: us-east-1
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
         run: |
-          pytest tests/test_infra.py
-
-      - name: Run Outages Tests
-        env:
-          AWS_DEFAULT_REGION: us-east-1
-          AWS_REGION: us-east-1
-          AWS_ACCESS_KEY_ID: test
-          AWS_SECRET_ACCESS_KEY: test
-        run: |
-          pytest tests/test_outage.py
+          pytest tests
 
       - name: Show localstack logs
         if: always()
         run: |
           localstack logs
-
-      - name: Send a Slack notification
-        if: failure() || github.event_name != 'pull_request'
-        uses: ravsamhq/notify-slack-action@v2
-        with:
-          status: ${{ job.status }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          notification_title: "{workflow} has {status_message}"
-          message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
-          footer: "Linked Repo <{repo_url}|{repo}> | <{run_url}|View Workflow run>"
-          notify_when: "failure"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Generate a Diagnostic Report
         if: failure()
