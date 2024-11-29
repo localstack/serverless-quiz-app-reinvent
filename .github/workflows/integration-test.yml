@@ -19,8 +19,8 @@ on:
           - ubuntu-latest
 env:
   LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
-  LOCALSTACK_PROJECT_ID: project_2dc06b1a-1222-4b0f-aad2-f2c967aa2296
-  LOCALSTACK_PIPELINE_ID: pipeline_08678615-5c69-4da9-9a7a-b8a87e19e949
+  LOCALSTACK_PROJECT_ID: project_1bipvrdld3
+  LOCALSTACK_PIPELINE_ID: pipeline_dw7flhan3i
 
 jobs:
   integration-test-job:
@@ -64,7 +64,6 @@ jobs:
       - name: Prepare LocalStack
         run: |
           LOCALSTACK_API_KEY=$LOCALSTACK_API_KEY \
-          API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1 \
             localstack extensions dev enable ./localstack-ci-extension
 
       - name: Start LocalStack
@@ -73,8 +72,6 @@ jobs:
           LOCALSTACK_API_KEY=$LOCALSTACK_API_KEY \
           LOCALSTACK_PROJECT_ID=$LOCALSTACK_PROJECT_ID \
           LOCALSTACK_PIPELINE_ID=$LOCALSTACK_PIPELINE_ID \
-          DOCKER_FLAGS="-e API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1" \
-          API_ENDPOINT=https://api.staging.aws.localstack.cloud/v1 \
           DNS_NAME_PATTERNS_TO_RESOLVE_UPSTREAM="*cianalyticsbucket*" \
           EXTENSION_DEV_MODE=1 \
           localstack start -d
